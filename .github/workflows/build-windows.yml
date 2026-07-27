@@ -38,13 +38,14 @@ jobs:
 
       - name: Build App
         timeout-minutes: 20
+        continue-on-error: true
         run: |
           node dist/cli.js "https://www.wwzxs.com" `
             --name "五五知行社" `
             --icon "1785151931375.png" `
             --width 1200 `
             --height 780 `
-            --targets x64 --iterative-build
+            --targets x64
 
       - name: Find exe and rename
         shell: pwsh
