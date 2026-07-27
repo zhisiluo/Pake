@@ -44,7 +44,7 @@ jobs:
             --icon "1785151931375.png" `
             --width 1200 `
             --height 780 `
-            --targets x64 --bundles none
+            --targets x64 --no-bundle
 
       - name: Find exe and rename
         shell: pwsh
