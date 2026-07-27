@@ -1,0 +1,75 @@
+name: Build Windows App
+
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10.26.2"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable-x86_64-msvc
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build CLI
+        run: pnpm run cli:build
+
+      - name: Build App
+        timeout-minutes: 20
+        run: |
+          node dist/cli.js "https://www.wwzxs.com" `
+            --name "五五执行者" `
+            --icon "1785151931375.png" `
+            --width 1200 `
+            --height 780 `
+            --targets x64 --bundles nsis
+
+      - name: Find and upload
+        shell: pwsh
+        run: |
+          New-Item -Path output -ItemType Directory -Force
+
+          # Find NSIS installer
+          $nsis = Get-ChildItem -Path "src-tauri\target\x86_64-pc-windows-msvc\release\bundle\nsis" -Filter "*.exe" -Recurse 2>$null
+          if ($nsis) {
+            Copy-Item $nsis[0].FullName "output\五五执行者_安装程序.exe"
+          } else {
+            # Fallback: find the raw exe
+            $exe = Get-ChildItem -Path "src-tauri\target\x86_64-pc-windows-msvc\release" -Filter "*.exe" -Recurse 2>$null | Where-Object { $_.Name -notmatch "test|pake-cli" }
+            if ($exe) {
+              Copy-Item $exe[0].FullName "output\五五执行者.exe"
+            } else {
+              Write-Error "No installer or exe found!"
+              Get-ChildItem -Path "src-tauri\target\" -Recurse -Name "*.exe" | Write-Host
+              exit 1
+            }
+          }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: 五五执行者-Windows
+          path: output/*
+          retention-days: 7
