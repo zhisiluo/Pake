@@ -40,7 +40,7 @@ jobs:
         timeout-minutes: 20
         run: |
           node dist/cli.js "https://www.wwzxs.com" `
-            --name "五五执行者" `
+            --name "五五知行社" `
             --icon "1785151931375.png" `
             --width 1200 `
             --height 780 `
@@ -54,12 +54,12 @@ jobs:
           # Find NSIS installer
           $nsis = Get-ChildItem -Path "src-tauri\target\x86_64-pc-windows-msvc\release\bundle\nsis" -Filter "*.exe" -Recurse 2>$null
           if ($nsis) {
-            Copy-Item $nsis[0].FullName "output\五五执行者_安装程序.exe"
+            Copy-Item $nsis[0].FullName "output\五五知行社_安装程序.exe"
           } else {
             # Fallback: find the raw exe
             $exe = Get-ChildItem -Path "src-tauri\target\x86_64-pc-windows-msvc\release" -Filter "*.exe" -Recurse 2>$null | Where-Object { $_.Name -notmatch "test|pake-cli" }
             if ($exe) {
-              Copy-Item $exe[0].FullName "output\五五执行者.exe"
+              Copy-Item $exe[0].FullName "output\五五知行社.exe"
             } else {
               Write-Error "No installer or exe found!"
               Get-ChildItem -Path "src-tauri\target\" -Recurse -Name "*.exe" | Write-Host
@@ -70,6 +70,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v6
         with:
-          name: 五五执行者-Windows
+          name: 五五知行社-Windows
           path: output/*
           retention-days: 7
