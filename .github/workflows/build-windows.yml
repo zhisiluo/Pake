@@ -44,27 +44,21 @@ jobs:
             --icon "1785151931375.png" `
             --width 1200 `
             --height 780 `
-            --targets x64 --bundles nsis
+            --targets x64 --bundles none
 
-      - name: Find and upload
+      - name: Find exe and rename
         shell: pwsh
         run: |
           New-Item -Path output -ItemType Directory -Force
 
-          # Find NSIS installer
-          $nsis = Get-ChildItem -Path "src-tauri\target\x86_64-pc-windows-msvc\release\bundle\nsis" -Filter "*.exe" -Recurse 2>$null
-          if ($nsis) {
-            Copy-Item $nsis[0].FullName "output\五五知行社_安装程序.exe"
+          $exe = Get-ChildItem -Path "src-tauri\target\x86_64-pc-windows-msvc\release" -Filter "*.exe" -Recurse 2>$null | Where-Object { $_.Name -notmatch "test|pake-cli" }
+          if ($exe) {
+            Copy-Item $exe[0].FullName "output\五五知行社.exe"
+            Write-Host "Found: $($exe[0].FullName)"
           } else {
-            # Fallback: find the raw exe
-            $exe = Get-ChildItem -Path "src-tauri\target\x86_64-pc-windows-msvc\release" -Filter "*.exe" -Recurse 2>$null | Where-Object { $_.Name -notmatch "test|pake-cli" }
-            if ($exe) {
-              Copy-Item $exe[0].FullName "output\五五知行社.exe"
-            } else {
-              Write-Error "No installer or exe found!"
-              Get-ChildItem -Path "src-tauri\target\" -Recurse -Name "*.exe" | Write-Host
-              exit 1
-            }
+            Write-Error "No exe found!"
+            Get-ChildItem -Path "src-tauri\target\" -Recurse -Name "*.exe" | Write-Host
+            exit 1
           }
 
       - name: Upload artifact
